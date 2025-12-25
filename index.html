@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEURAL.HUD // Prompt Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f3ff;
+            --secondary: #ff003c;
+            --bg-dark: #050505;
+            --bg-panel: #0a0a0a;
+            --grid-color: rgba(0, 243, 255, 0.05);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--primary);
+            font-family: 'Share Tech Mono', monospace;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 30px 30px;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3, .hud-font {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1a1a1a;
+            border: 1px solid var(--primary);
+        }
+
+        /* HUD Effects */
+        .hud-border {
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            position: relative;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(4px);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .hud-border:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        .hud-corner::before, .hud-corner::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: var(--primary);
+            border-style: solid;
+            transition: all 0.3s ease;
+        }
+
+        .hud-corner::before {
+            top: -1px;
+            left: -1px;
+            border-width: 2px 0 0 2px;
+        }
+
+        .hud-corner::after {
+            bottom: -1px;
+            right: -1px;
+            border-width: 0 2px 2px 0;
+        }
+
+        .hud-btn {
+            background: rgba(0, 243, 255, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hud-btn:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        .hud-btn-danger {
+            border-color: var(--secondary);
+            color: var(--secondary);
+            background: rgba(255, 0, 60, 0.1);
+        }
+
+        .hud-btn-danger:hover {
+            background: var(--secondary);
+            color: #000;
+            box-shadow: 0 0 15px var(--secondary);
+        }
+
+        .hud-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            color: var(--primary);
+            transition: all 0.3s;
+        }
+
+        .hud-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+
+        /* Tag Styling */
+        .tag-pill {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border: 1px solid rgba(0, 243, 255, 0.4);
+            color: rgba(0, 243, 255, 0.8);
+            border-radius: 999px; /* Pill shape, techy but rounded */
+            background: rgba(0, 243, 255, 0.05);
+        }
+        
+        /* Modal Animation */
+        .modal-fade-enter {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        .modal-fade-enter-active {
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity 200ms, transform 200ms;
+        }
+        .modal-fade-exit {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .modal-fade-exit-active {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: opacity 200ms, transform 200ms;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+        }
+
+        /* Line Clamp for Card Preview */
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <!-- Top Bar -->
+    <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 border border-cyan-400 flex items-center justify-center bg-cyan-900/20">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold tracking-widest glow-text">NEURAL.ARCHIVE</h1>
+                <p class="text-xs text-cyan-600 tracking-wider">LOCAL_STORAGE // V.1.0</p>
+            </div>
+        </div>
+
+        <!-- Search & Actions -->
+        <div class="flex flex-col md:flex-row w-full md:w-auto gap-4 items-center">
+            <div class="relative w-full md:w-96">
+                <input type="text" id="searchInput" placeholder="SEARCH DATABASE..." 
+                    class="hud-input w-full px-4 py-2 pl-10 text-sm bg-black/50 border border-cyan-800 focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,243,255,0.3)] placeholder-cyan-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-3 text-cyan-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+            <button onclick="openModal()" class="hud-btn px-6 py-2 font-bold text-sm w-full md:w-auto flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                NEW_ENTRY
+            </button>
+            <button onclick="exportData()" class="hud-btn px-4 py-2 text-xs w-full md:w-auto" title="Backup to JSON">
+                BACKUP
+            </button>
+        </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <div class="max-w-7xl mx-auto mb-6 flex flex-wrap gap-4 text-xs text-cyan-700 uppercase tracking-wider">
+        <div class="hud-border px-3 py-1">Total Entries: <span id="totalCount" class="text-cyan-400 ml-2">0</span></div>
+        <div class="hud-border px-3 py-1">Categories: <span id="categoryCount" class="text-cyan-400 ml-2">0</span></div>
+        <div class="hud-border px-3 py-1">Storage Used: <span id="storageUsed" class="text-cyan-400 ml-2">0 KB</span></div>
+    </div>
+
+    <!-- Main Grid -->
+    <main id="promptGrid" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+        <!-- Prompts will be injected here via JS -->
+    </main>
+
+    <!-- Empty State (Hidden by default, shown via JS if needed) -->
+    <div id="emptyState" class="hidden fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-50">
+        <div class="text-6xl text-cyan-900/40 mb-4 font-black hud-font">NO DATA</div>
+        <div class="text-cyan-800 tracking-widest">INITIATE NEW ENTRY TO BEGIN</div>
+    </div>
+
+
+    <!-- Add/Edit Modal -->
+    <div id="modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="hud-border hud-corner w-full max-w-2xl bg-black/95 p-6 md:p-8 relative transform transition-all" id="modalContent">
+            
+            <div class="flex justify-between items-start mb-6 border-b border-cyan-900/50 pb-4">
+                <h2 class="text-2xl font-bold tracking-widest text-cyan-400" id="modalTitle">NEW_ENTRY</h2>
+                <button onclick="closeModal()" class="text-cyan-700 hover:text-red-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="promptForm" onsubmit="handleFormSubmit(event)">
+                <input type="hidden" id="entryId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label class="block text-xs text-cyan-600 mb-2 uppercase tracking-wider">Title</label>
+                        <input type="text" id="titleInput" required class="hud-input w-full px-4 py-3 text-lg font-bold bg-black border border-cyan-800 focus:border-cyan-400" placeholder="ENTER_TITLE">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-cyan-600 mb-2 uppercase tracking-wider">Category</label>
+                        <input type="text" id="categoryInput" list="categoryList" class="hud-input w-full px-4 py-3 bg-black border border-cyan-800 focus:border-cyan-400" placeholder="SYSTEM / CREATIVE / CODING">
+                        <datalist id="categoryList">
+                            <!-- Populated via JS -->
+                        </datalist>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-xs text-cyan-600 mb-2 uppercase tracking-wider">Prompt Content</label>
+                    <textarea id="contentInput" required rows="8" class="hud-input w-full px-4 py-3 bg-black border border-cyan-800 focus:border-cyan-400 font-mono text-sm leading-relaxed" placeholder="Enter prompt data here..."></textarea>
+                </div>
+
+                <div class="mb-8">
+                    <label class="block text-xs text-cyan-600 mb-2 uppercase tracking-wider">Tags (Comma Separated)</label>
+                    <input type="text" id="tagsInput" class="hud-input w-full px-4 py-2 bg-black border border-cyan-800 focus:border-cyan-400 text-sm" placeholder="AI, helper, v1, draft">
+                </div>
+
+                <div class="flex justify-end gap-4 border-t border-cyan-900/50 pt-6">
+                    <button type="button" onclick="closeModal()" class="px-6 py-2 text-cyan-600 hover:text-cyan-400 text-sm tracking-wider uppercase">Cancel</button>
+                    <button type="submit" class="hud-btn px-8 py-3 font-bold text-sm tracking-widest flex items-center gap-2">
+                        <span class="w-2 h-2 bg-cyan-400 animate-pulse inline-block"></span>
+                        SAVE_DATA
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-8 right-8 hud-border bg-black/90 p-4 transform translate-y-24 transition-transform duration-300 z-50 flex items-center gap-3">
+        <div class="w-2 h-2 bg-cyan-400 rounded-full animate-ping"></div>
+        <span id="toastMsg" class="text-sm font-bold tracking-wider">OPERATION SUCCESSFUL</span>
+    </div>
+
+    <script>
+        // --- State Management ---
+        const STORAGE_KEY = 'neural_hud_prompts_v1';
+        let prompts = [];
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            renderPrompts();
+            updateStats();
+            setupSearch();
+        });
+
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    prompts = JSON.parse(stored);
+                } catch (e) {
+                    console.error("Corrupt data found", e);
+                    prompts = [];
+                }
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(prompts));
+            updateStats();
+            refreshCategories();
+        }
+
+        // --- Core Functions ---
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('entryId').value;
+            const title = document.getElementById('titleInput').value;
+            const category = document.getElementById('categoryInput').value || 'Uncategorized';
+            const content = document.getElementById('contentInput').value;
+            const tagsStr = document.getElementById('tagsInput').value;
+            
+            // Parse tags: split by comma, trim whitespace, remove empty
+            const tags = tagsStr.split(',').map(t => t.trim()).filter(t => t.length > 0);
+
+            if (id) {
+                // Edit mode
+                const index = prompts.findIndex(p => p.id === id);
+                if (index !== -1) {
+                    prompts[index] = { ...prompts[index], title, category, content, tags, updatedAt: Date.now() };
+                }
+            } else {
+                // Create mode
+                const newPrompt = {
+                    id: crypto.randomUUID(),
+                    title,
+                    category,
+                    content,
+                    tags,
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
+                };
+                prompts.unshift(newPrompt); // Add to top
+            }
+
+            saveData();
+            renderPrompts(document.getElementById('searchInput').value);
+            closeModal();
+            showToast(id ? 'ENTRY_UPDATED' : 'ENTRY_CREATED');
+        }
+
+        function deletePrompt(id) {
+            if(confirm('CONFIRM DELETION? This action cannot be undone.')) {
+                prompts = prompts.filter(p => p.id !== id);
+                saveData();
+                renderPrompts(document.getElementById('searchInput').value);
+                showToast('ENTRY_DELETED');
+            }
+        }
+
+        function copyPrompt(id) {
+            const prompt = prompts.find(p => p.id === id);
+            if (prompt) {
+                navigator.clipboard.writeText(prompt.content).then(() => {
+                    showToast('COPIED_TO_CLIPBOARD');
+                });
+            }
+        }
+
+        // --- Rendering ---
+
+        function renderPrompts(filterText = '') {
+            const grid = document.getElementById('promptGrid');
+            const emptyState = document.getElementById('emptyState');
+            grid.innerHTML = '';
+            
+            const term = filterText.toLowerCase();
+
+            const filtered = prompts.filter(p => {
+                const searchStr = `${p.title} ${p.content} ${p.category} ${p.tags.join(' ')}`.toLowerCase();
+                return searchStr.includes(term);
+            });
+
+            if (filtered.length === 0) {
+                if (prompts.length === 0) {
+                     emptyState.classList.remove('hidden');
+                     // If searching and no results, but data exists
+                } else if (filterText) {
+                    grid.innerHTML = `<div class="col-span-full text-center py-20 text-cyan-800">NO MATCHES FOUND FOR QUERY "${filterText}"</div>`;
+                    emptyState.classList.add('hidden');
+                }
+            } else {
+                emptyState.classList.add('hidden');
+                filtered.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'hud-border hud-corner p-6 flex flex-col h-full bg-black/40 hover:bg-black/60 transition-colors group';
+                    
+                    // Generate Tags HTML
+                    const tagsHtml = p.tags.map(tag => `<span class="tag-pill">${tag}</span>`).join('');
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-xs font-bold text-cyan-600 border border-cyan-900 px-2 py-0.5 uppercase">${p.category}</span>
+                            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="editPrompt('${p.id}')" class="text-cyan-600 hover:text-cyan-300" title="Edit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                                </button>
+                                <button onclick="deletePrompt('${p.id}')" class="text-red-900 hover:text-red-500" title="Delete">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-xl font-bold text-white mb-2 tracking-wide group-hover:text-cyan-400 transition-colors">${p.title}</h3>
+                        
+                        <div class="text-gray-400 text-sm font-mono mb-4 flex-grow relative overflow-hidden">
+                            <p class="line-clamp-3 opacity-80">${p.content}</p>
+                            <div class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-black/80 to-transparent"></div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${tagsHtml}
+                        </div>
+
+                        <div class="pt-4 border-t border-cyan-900/30 flex justify-between items-center mt-auto">
+                            <span class="text-[10px] text-cyan-800">${new Date(p.updatedAt).toLocaleDateString()}</span>
+                            <button onclick="copyPrompt('${p.id}')" class="hud-btn px-3 py-1 text-xs flex items-center gap-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                                COPY
+                            </button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        // --- UI Interactions ---
+
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                renderPrompts(e.target.value);
+            });
+        }
+
+        function openModal() {
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modalContent').classList.add('modal-fade-enter-active');
+            
+            // Clear form
+            document.getElementById('promptForm').reset();
+            document.getElementById('entryId').value = '';
+            document.getElementById('modalTitle').innerText = 'NEW_ENTRY';
+            
+            refreshCategories();
+            document.getElementById('titleInput').focus();
+        }
+
+        function editPrompt(id) {
+            const p = prompts.find(pr => pr.id === id);
+            if (!p) return;
+
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modalContent').classList.add('modal-fade-enter-active');
+
+            document.getElementById('entryId').value = p.id;
+            document.getElementById('titleInput').value = p.title;
+            document.getElementById('categoryInput').value = p.category;
+            document.getElementById('contentInput').value = p.content;
+            document.getElementById('tagsInput').value = p.tags.join(', ');
+            
+            document.getElementById('modalTitle').innerText = 'EDIT_ENTRY :: ' + p.id.substring(0,4);
+            refreshCategories();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        function refreshCategories() {
+            const datalist = document.getElementById('categoryList');
+            datalist.innerHTML = '';
+            // Get unique categories
+            const categories = [...new Set(prompts.map(p => p.category))];
+            categories.sort().forEach(c => {
+                const option = document.createElement('option');
+                option.value = c;
+                datalist.appendChild(option);
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toastMsg');
+            msgEl.innerText = msg;
+            toast.classList.remove('translate-y-24');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24');
+            }, 2500);
+        }
+
+        function updateStats() {
+            document.getElementById('totalCount').innerText = prompts.length;
+            const uniqueCats = new Set(prompts.map(p => p.category)).size;
+            document.getElementById('categoryCount').innerText = uniqueCats;
+            
+            // Approx storage calculation
+            const size = new Blob([JSON.stringify(prompts)]).size;
+            document.getElementById('storageUsed').innerText = (size / 1024).toFixed(2) + ' KB';
+        }
+
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(prompts));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "neural_hud_backup_" + new Date().toISOString().slice(0,10) + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            showToast('BACKUP_DOWNLOADED');
+        }
+
+        // Close modal on outside click
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+
+    </script>
+</body>
+</html>
