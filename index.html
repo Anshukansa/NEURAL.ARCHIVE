@@ -9,6 +9,7 @@
     <style>
         :root {
             --primary: #00f3ff;
+            --primary-dim: rgba(0, 243, 255, 0.1);
             --secondary: #ff003c;
             --bg-dark: #050505;
             --bg-panel: #0a0a0a;
@@ -22,50 +23,75 @@
             background-image: 
                 linear-gradient(var(--grid-color) 1px, transparent 1px),
                 linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-size: 40px 40px;
             overflow-x: hidden;
             min-height: 100vh;
+            animation: gridPan 20s linear infinite;
+        }
+
+        @keyframes gridPan {
+            0% { background-position: 0 0; }
+            100% { background-position: 40px 40px; }
         }
 
         h1, h2, h3, .hud-font {
             font-family: 'Orbitron', sans-serif;
         }
 
+        /* CRT Scanline Overlay */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.3;
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
+            width: 6px;
         }
         ::-webkit-scrollbar-track {
             background: #000;
         }
         ::-webkit-scrollbar-thumb {
-            background: #1a1a1a;
-            border: 1px solid var(--primary);
+            background: var(--primary);
+            border-radius: 3px;
+            box-shadow: 0 0 10px var(--primary);
         }
 
         /* HUD Effects */
         .hud-border {
-            border: 1px solid rgba(0, 243, 255, 0.3);
+            border: 1px solid rgba(0, 243, 255, 0.2);
             position: relative;
-            background: rgba(10, 10, 10, 0.8);
-            backdrop-filter: blur(4px);
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.05);
-            transition: all 0.3s ease;
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.05), inset 0 0 20px rgba(0, 243, 255, 0.02);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .hud-border:hover {
             border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.15), inset 0 0 10px rgba(0, 243, 255, 0.1);
+            transform: translateY(-2px);
         }
 
+        /* Corner accents */
         .hud-corner::before, .hud-corner::after {
             content: '';
             position: absolute;
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-color: var(--primary);
             border-style: solid;
             transition: all 0.3s ease;
+            opacity: 0.7;
         }
 
         .hud-corner::before {
@@ -81,82 +107,128 @@
         }
 
         .hud-btn {
-            background: rgba(0, 243, 255, 0.1);
+            background: var(--primary-dim);
             border: 1px solid var(--primary);
             color: var(--primary);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
             transition: all 0.2s;
             position: relative;
             overflow: hidden;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+        }
+
+        .hud-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.4), transparent);
+            transition: 0.5s;
+        }
+
+        .hud-btn:hover::before {
+            left: 100%;
         }
 
         .hud-btn:hover {
             background: var(--primary);
             color: #000;
-            box-shadow: 0 0 15px var(--primary);
-        }
-
-        .hud-btn-danger {
-            border-color: var(--secondary);
-            color: var(--secondary);
-            background: rgba(255, 0, 60, 0.1);
-        }
-
-        .hud-btn-danger:hover {
-            background: var(--secondary);
-            color: #000;
-            box-shadow: 0 0 15px var(--secondary);
+            box-shadow: 0 0 20px var(--primary);
+            text-shadow: none;
         }
 
         .hud-input {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             border: 1px solid #333;
             color: var(--primary);
             transition: all 0.3s;
+            font-family: 'Share Tech Mono', monospace;
         }
 
         .hud-input:focus {
             border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.15);
         }
 
         /* Tag Styling */
         .tag-pill {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border: 1px solid rgba(0, 243, 255, 0.4);
-            color: rgba(0, 243, 255, 0.8);
-            border-radius: 999px; /* Pill shape, techy but rounded */
+            font-size: 0.65rem;
+            padding: 4px 10px;
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            color: rgba(0, 243, 255, 0.9);
+            border-radius: 2px;
             background: rgba(0, 243, 255, 0.05);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
+        .tag-pill:hover {
+            background: var(--primary);
+            color: black;
+        }
+        
+        /* Category Filter Chips */
+        .filter-chip {
+            border: 1px solid #333;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .filter-chip:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
+        }
+        .filter-chip.active {
+            background: var(--primary);
+            color: black;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+        }
+
         /* Modal Animation */
-        .modal-fade-enter {
-            opacity: 0;
-            transform: scale(0.95);
-        }
-        .modal-fade-enter-active {
-            opacity: 1;
-            transform: scale(1);
-            transition: opacity 200ms, transform 200ms;
-        }
-        .modal-fade-exit {
-            opacity: 1;
-            transform: scale(1);
-        }
-        .modal-fade-exit-active {
-            opacity: 0;
-            transform: scale(0.95);
-            transition: opacity 200ms, transform 200ms;
-        }
+        .modal-fade-enter { opacity: 0; transform: scale(0.95); }
+        .modal-fade-enter-active { opacity: 1; transform: scale(1); transition: opacity 200ms, transform 200ms cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .modal-fade-exit { opacity: 1; transform: scale(1); }
+        .modal-fade-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 200ms, transform 200ms; }
 
         .glow-text {
-            text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.7), 0 0 20px rgba(0, 243, 255, 0.5);
+            animation: textFlicker 3s infinite alternate;
         }
 
-        /* Line Clamp for Card Preview */
+        @keyframes textFlicker {
+            0% { opacity: 1; }
+            3% { opacity: 0.8; }
+            6% { opacity: 1; }
+            7% { opacity: 1; }
+            8% { opacity: 0.4; }
+            9% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+
+        /* Boot Animation Sequence */
+        .boot-seq {
+            opacity: 0;
+            animation: slideIn 0.5s forwards;
+        }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .line-clamp-3 {
             display: -webkit-box;
             -webkit-line-clamp: 3;
@@ -168,67 +240,105 @@
 <body class="p-4 md:p-8">
 
     <!-- Top Bar -->
-    <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 border border-cyan-400 flex items-center justify-center bg-cyan-900/20">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <header class="max-w-7xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-center gap-6 boot-seq">
+        <div class="flex items-center gap-4 group">
+            <div class="w-12 h-12 border-2 border-cyan-400 flex items-center justify-center bg-cyan-900/20 shadow-[0_0_15px_rgba(0,243,255,0.3)] group-hover:shadow-[0_0_25px_rgba(0,243,255,0.6)] transition-all duration-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-cyan-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                 </svg>
             </div>
             <div>
-                <h1 class="text-2xl font-bold tracking-widest glow-text">NEURAL.ARCHIVE</h1>
-                <p class="text-xs text-cyan-600 tracking-wider">LOCAL_STORAGE // V.1.0</p>
+                <h1 class="text-3xl font-black tracking-widest glow-text italic">NEURAL<span class="text-white">.HUD</span></h1>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <p class="text-[10px] text-cyan-600 tracking-[0.2em] font-bold">SYSTEM_ONLINE // V.2.1</p>
+                </div>
             </div>
         </div>
 
         <!-- Search & Actions -->
         <div class="flex flex-col md:flex-row w-full md:w-auto gap-4 items-center">
-            <div class="relative w-full md:w-96">
-                <input type="text" id="searchInput" placeholder="SEARCH DATABASE..." 
-                    class="hud-input w-full px-4 py-2 pl-10 text-sm bg-black/50 border border-cyan-800 focus:border-cyan-400 focus:shadow-[0_0_10px_rgba(0,243,255,0.3)] placeholder-cyan-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-3 text-cyan-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="relative w-full md:w-80 group">
+                <input type="text" id="searchInput" placeholder="INITIATE_SEARCH_QUERY..." 
+                    class="hud-input w-full px-4 py-3 pl-10 text-sm bg-black/50 border border-cyan-800 focus:border-cyan-400 placeholder-cyan-900/70 text-cyan-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-3 top-3.5 text-cyan-700 group-hover:text-cyan-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
+                <div class="absolute bottom-0 left-0 w-0 h-[1px] bg-cyan-400 group-hover:w-full transition-all duration-700"></div>
             </div>
-            <button onclick="openModal()" class="hud-btn px-6 py-2 font-bold text-sm w-full md:w-auto flex items-center justify-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                NEW_ENTRY
-            </button>
-            <button onclick="exportData()" class="hud-btn px-4 py-2 text-xs w-full md:w-auto" title="Backup to JSON">
-                BACKUP
-            </button>
+            
+            <div class="flex gap-2 w-full md:w-auto">
+                <button onclick="openModal()" class="hud-btn px-6 py-3 font-bold text-sm w-full md:w-auto flex items-center justify-center gap-2 group">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    ADD_NODE
+                </button>
+                <button onclick="exportData()" class="hud-btn px-4 py-3 text-xs" title="Export JSON Database">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- Stats Bar -->
-    <div class="max-w-7xl mx-auto mb-6 flex flex-wrap gap-4 text-xs text-cyan-700 uppercase tracking-wider">
-        <div class="hud-border px-3 py-1">Total Entries: <span id="totalCount" class="text-cyan-400 ml-2">0</span></div>
-        <div class="hud-border px-3 py-1">Categories: <span id="categoryCount" class="text-cyan-400 ml-2">0</span></div>
-        <div class="hud-border px-3 py-1">Storage Used: <span id="storageUsed" class="text-cyan-400 ml-2">0 KB</span></div>
+    <!-- Filter & Stats Bar -->
+    <div class="max-w-7xl mx-auto mb-8 space-y-4 boot-seq delay-1">
+        <!-- Dynamic Filter Chips -->
+        <div class="flex flex-wrap gap-2" id="filterContainer">
+            <button onclick="applyFilter('all')" class="filter-chip active px-4 py-1 text-xs uppercase tracking-wider font-bold rounded-sm bg-black/50">ALL_NODES</button>
+            <!-- Categories injected here -->
+        </div>
+
+        <div class="flex flex-wrap gap-4 text-[10px] text-cyan-800 uppercase tracking-wider font-mono border-t border-cyan-900/30 pt-2">
+            <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 bg-cyan-500 rounded-full"></div>
+                DB_ENTRIES: <span id="totalCount" class="text-cyan-400 font-bold">0</span>
+            </div>
+            <span class="text-cyan-900">|</span>
+            <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 bg-purple-500 rounded-full"></div>
+                CLUSTERS: <span id="categoryCount" class="text-cyan-400 font-bold">0</span>
+            </div>
+            <span class="text-cyan-900">|</span>
+            <div class="flex items-center gap-2">
+                <div class="w-1.5 h-1.5 bg-orange-500 rounded-full"></div>
+                MEMORY_USAGE: <span id="storageUsed" class="text-cyan-400 font-bold">0 KB</span>
+            </div>
+        </div>
     </div>
 
     <!-- Main Grid -->
-    <main id="promptGrid" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+    <main id="promptGrid" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20 boot-seq delay-2">
         <!-- Prompts will be injected here via JS -->
     </main>
 
-    <!-- Empty State (Hidden by default, shown via JS if needed) -->
-    <div id="emptyState" class="hidden fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-0 opacity-50">
-        <div class="text-6xl text-cyan-900/40 mb-4 font-black hud-font">NO DATA</div>
-        <div class="text-cyan-800 tracking-widest">INITIATE NEW ENTRY TO BEGIN</div>
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-0">
+        <div class="relative">
+            <div class="absolute -inset-4 bg-cyan-500/10 blur-xl rounded-full animate-pulse"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-cyan-900/50 mb-4 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+        </div>
+        <div class="text-4xl text-cyan-900/60 mb-2 font-black hud-font tracking-widest">NO_DATA</div>
+        <div class="text-cyan-800 text-xs tracking-[0.3em] uppercase">Initialize first entry node</div>
     </div>
 
 
     <!-- Add/Edit Modal -->
-    <div id="modal" class="fixed inset-0 bg-black/90 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
-        <div class="hud-border hud-corner w-full max-w-2xl bg-black/95 p-6 md:p-8 relative transform transition-all" id="modalContent">
+    <div id="modal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden z-50 flex items-center justify-center p-4">
+        <div class="hud-border hud-corner w-full max-w-2xl bg-black p-6 md:p-8 relative transform transition-all border border-cyan-500/20 shadow-[0_0_50px_rgba(0,243,255,0.1)]" id="modalContent">
             
-            <div class="flex justify-between items-start mb-6 border-b border-cyan-900/50 pb-4">
-                <h2 class="text-2xl font-bold tracking-widest text-cyan-400" id="modalTitle">NEW_ENTRY</h2>
-                <button onclick="closeModal()" class="text-cyan-700 hover:text-red-500 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="flex justify-between items-center mb-8 border-b border-cyan-900/50 pb-4">
+                <div class="flex items-center gap-3">
+                    <span class="w-2 h-8 bg-cyan-400"></span>
+                    <h2 class="text-3xl font-bold tracking-widest text-white hud-font" id="modalTitle">NEW_ENTRY</h2>
+                </div>
+                <button onclick="closeModal()" class="text-cyan-700 hover:text-red-500 transition-colors p-2 hover:bg-red-500/10 rounded">
+                    <span class="sr-only">Close</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
@@ -239,33 +349,34 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                     <div>
-                        <label class="block text-xs text-cyan-600 mb-2 uppercase tracking-wider">Title</label>
-                        <input type="text" id="titleInput" required class="hud-input w-full px-4 py-3 text-lg font-bold bg-black border border-cyan-800 focus:border-cyan-400" placeholder="ENTER_TITLE">
+                        <label class="block text-[10px] text-cyan-500 mb-2 uppercase tracking-widest font-bold">Node Identifier (Title)</label>
+                        <input type="text" id="titleInput" required class="hud-input w-full px-4 py-3 text-lg font-bold bg-black/80 border border-cyan-800 focus:border-cyan-400 text-white" placeholder="ENTER_TITLE">
                     </div>
                     <div>
-                        <label class="block text-xs text-cyan-600 mb-2 uppercase tracking-wider">Category</label>
-                        <input type="text" id="categoryInput" list="categoryList" class="hud-input w-full px-4 py-3 bg-black border border-cyan-800 focus:border-cyan-400" placeholder="SYSTEM / CREATIVE / CODING">
+                        <label class="block text-[10px] text-cyan-500 mb-2 uppercase tracking-widest font-bold">System Cluster (Category)</label>
+                        <input type="text" id="categoryInput" list="categoryList" class="hud-input w-full px-4 py-3 bg-black/80 border border-cyan-800 focus:border-cyan-400 text-cyan-100" placeholder="SELECT_OR_CREATE">
                         <datalist id="categoryList">
                             <!-- Populated via JS -->
                         </datalist>
                     </div>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-xs text-cyan-600 mb-2 uppercase tracking-wider">Prompt Content</label>
-                    <textarea id="contentInput" required rows="8" class="hud-input w-full px-4 py-3 bg-black border border-cyan-800 focus:border-cyan-400 font-mono text-sm leading-relaxed" placeholder="Enter prompt data here..."></textarea>
+                <div class="mb-6 relative group">
+                    <label class="block text-[10px] text-cyan-500 mb-2 uppercase tracking-widest font-bold">Data Payload (Prompt)</label>
+                    <textarea id="contentInput" required rows="8" class="hud-input w-full px-4 py-3 bg-black/80 border border-cyan-800 focus:border-cyan-400 font-mono text-sm leading-relaxed text-gray-300 scrollbar-thin" placeholder="Input prompt parameters..."></textarea>
+                    <div class="absolute bottom-3 right-3 text-[10px] text-cyan-900 pointer-events-none">RAW_TEXT</div>
                 </div>
 
                 <div class="mb-8">
-                    <label class="block text-xs text-cyan-600 mb-2 uppercase tracking-wider">Tags (Comma Separated)</label>
-                    <input type="text" id="tagsInput" class="hud-input w-full px-4 py-2 bg-black border border-cyan-800 focus:border-cyan-400 text-sm" placeholder="AI, helper, v1, draft">
+                    <label class="block text-[10px] text-cyan-500 mb-2 uppercase tracking-widest font-bold">Index Tags (CSV)</label>
+                    <input type="text" id="tagsInput" class="hud-input w-full px-4 py-2 bg-black/80 border border-cyan-800 focus:border-cyan-400 text-sm text-cyan-100" placeholder="tag1, tag2, tag3">
                 </div>
 
                 <div class="flex justify-end gap-4 border-t border-cyan-900/50 pt-6">
-                    <button type="button" onclick="closeModal()" class="px-6 py-2 text-cyan-600 hover:text-cyan-400 text-sm tracking-wider uppercase">Cancel</button>
-                    <button type="submit" class="hud-btn px-8 py-3 font-bold text-sm tracking-widest flex items-center gap-2">
-                        <span class="w-2 h-2 bg-cyan-400 animate-pulse inline-block"></span>
-                        SAVE_DATA
+                    <button type="button" onclick="closeModal()" class="px-6 py-2 text-cyan-600 hover:text-white text-xs tracking-widest uppercase transition-colors">Abort</button>
+                    <button type="submit" class="hud-btn px-8 py-3 font-bold text-sm tracking-widest flex items-center gap-3 bg-cyan-900/20">
+                        <span class="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping"></span>
+                        COMMIT_TO_DB
                     </button>
                 </div>
             </form>
@@ -273,22 +384,31 @@
     </div>
 
     <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-8 right-8 hud-border bg-black/90 p-4 transform translate-y-24 transition-transform duration-300 z-50 flex items-center gap-3">
-        <div class="w-2 h-2 bg-cyan-400 rounded-full animate-ping"></div>
-        <span id="toastMsg" class="text-sm font-bold tracking-wider">OPERATION SUCCESSFUL</span>
+    <div id="toast" class="fixed bottom-8 right-8 hud-border bg-black/95 p-5 transform translate-y-32 transition-transform duration-300 z-50 flex items-center gap-4 border-l-4 border-l-cyan-400 shadow-[0_0_20px_rgba(0,243,255,0.2)]">
+        <div class="p-2 border border-cyan-500/50 rounded-full">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <div>
+            <h4 class="text-xs font-bold text-cyan-400 tracking-widest mb-1">SYSTEM_NOTIFICATION</h4>
+            <span id="toastMsg" class="text-sm text-white font-mono">OPERATION SUCCESSFUL</span>
+        </div>
     </div>
 
     <script>
         // --- State Management ---
         const STORAGE_KEY = 'neural_hud_prompts_v1';
         let prompts = [];
+        let activeFilter = 'all';
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
-            renderPrompts();
-            updateStats();
-            setupSearch();
+            // Intro Animation if data exists
+            if (prompts.length > 0) {
+                setTimeout(() => showToast(`SYSTEM_RESTORED: ${prompts.length} NODES LOADED`), 800);
+            }
         });
 
         function loadData() {
@@ -301,12 +421,18 @@
                     prompts = [];
                 }
             }
+            updateUI();
         }
 
         function saveData() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(prompts));
-            updateStats();
+            updateUI();
+        }
+        
+        function updateUI() {
             refreshCategories();
+            renderPrompts(document.getElementById('searchInput').value);
+            updateStats();
         }
 
         // --- Core Functions ---
@@ -320,17 +446,14 @@
             const content = document.getElementById('contentInput').value;
             const tagsStr = document.getElementById('tagsInput').value;
             
-            // Parse tags: split by comma, trim whitespace, remove empty
             const tags = tagsStr.split(',').map(t => t.trim()).filter(t => t.length > 0);
 
             if (id) {
-                // Edit mode
                 const index = prompts.findIndex(p => p.id === id);
                 if (index !== -1) {
                     prompts[index] = { ...prompts[index], title, category, content, tags, updatedAt: Date.now() };
                 }
             } else {
-                // Create mode
                 const newPrompt = {
                     id: crypto.randomUUID(),
                     title,
@@ -340,21 +463,19 @@
                     createdAt: Date.now(),
                     updatedAt: Date.now()
                 };
-                prompts.unshift(newPrompt); // Add to top
+                prompts.unshift(newPrompt);
             }
 
             saveData();
-            renderPrompts(document.getElementById('searchInput').value);
             closeModal();
-            showToast(id ? 'ENTRY_UPDATED' : 'ENTRY_CREATED');
+            showToast(id ? 'NODE_UPDATED_SUCCESSFULLY' : 'NEW_NODE_CREATED');
         }
 
         function deletePrompt(id) {
-            if(confirm('CONFIRM DELETION? This action cannot be undone.')) {
+            if(confirm('WARNING: PERMANENT DELETION.\nCONFIRM ACTION?')) {
                 prompts = prompts.filter(p => p.id !== id);
                 saveData();
-                renderPrompts(document.getElementById('searchInput').value);
-                showToast('ENTRY_DELETED');
+                showToast('NODE_TERMINATED');
             }
         }
 
@@ -362,9 +483,23 @@
             const prompt = prompts.find(p => p.id === id);
             if (prompt) {
                 navigator.clipboard.writeText(prompt.content).then(() => {
-                    showToast('COPIED_TO_CLIPBOARD');
+                    showToast('DATA_COPIED_TO_CLIPBOARD');
                 });
             }
+        }
+        
+        function applyFilter(category) {
+            activeFilter = category;
+            
+            // Update chip styles
+            document.querySelectorAll('.filter-chip').forEach(btn => {
+                btn.classList.remove('active', 'bg-cyan-400', 'text-black');
+                if ((category === 'all' && btn.innerText === 'ALL_NODES') || btn.innerText === category.toUpperCase()) {
+                    btn.classList.add('active', 'bg-cyan-400', 'text-black');
+                }
+            });
+            
+            renderPrompts(document.getElementById('searchInput').value);
         }
 
         // --- Rendering ---
@@ -377,56 +512,61 @@
             const term = filterText.toLowerCase();
 
             const filtered = prompts.filter(p => {
-                const searchStr = `${p.title} ${p.content} ${p.category} ${p.tags.join(' ')}`.toLowerCase();
-                return searchStr.includes(term);
+                const matchesSearch = `${p.title} ${p.content} ${p.category} ${p.tags.join(' ')}`.toLowerCase().includes(term);
+                const matchesCategory = activeFilter === 'all' || p.category === activeFilter;
+                return matchesSearch && matchesCategory;
             });
 
             if (filtered.length === 0) {
                 if (prompts.length === 0) {
                      emptyState.classList.remove('hidden');
-                     // If searching and no results, but data exists
-                } else if (filterText) {
-                    grid.innerHTML = `<div class="col-span-full text-center py-20 text-cyan-800">NO MATCHES FOUND FOR QUERY "${filterText}"</div>`;
+                } else {
+                    grid.innerHTML = `<div class="col-span-full text-center py-20 text-cyan-800 font-mono tracking-widest border border-dashed border-cyan-900/30">NO MATCHING DATA FOUND IN SECTOR</div>`;
                     emptyState.classList.add('hidden');
                 }
             } else {
                 emptyState.classList.add('hidden');
-                filtered.forEach(p => {
+                filtered.forEach((p, index) => {
                     const card = document.createElement('div');
-                    card.className = 'hud-border hud-corner p-6 flex flex-col h-full bg-black/40 hover:bg-black/60 transition-colors group';
+                    // Staggered animation for list items
+                    card.style.animationDelay = `${index * 50}ms`;
+                    card.className = 'boot-seq hud-border hud-corner p-6 flex flex-col h-full bg-black/40 hover:bg-black/80 transition-all group relative overflow-hidden';
                     
-                    // Generate Tags HTML
-                    const tagsHtml = p.tags.map(tag => `<span class="tag-pill">${tag}</span>`).join('');
+                    const tagsHtml = p.tags.map(tag => `<span class="tag-pill" onclick="setSearch('${tag}')">${tag}</span>`).join('');
 
                     card.innerHTML = `
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="text-xs font-bold text-cyan-600 border border-cyan-900 px-2 py-0.5 uppercase">${p.category}</span>
-                            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="editPrompt('${p.id}')" class="text-cyan-600 hover:text-cyan-300" title="Edit">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                                </button>
-                                <button onclick="deletePrompt('${p.id}')" class="text-red-900 hover:text-red-500" title="Delete">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                </button>
-                            </div>
+                        <div class="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-10 bg-black/50 backdrop-blur-sm rounded-bl-lg border-b border-l border-cyan-900/50">
+                             <button onclick="editPrompt('${p.id}')" class="text-cyan-400 hover:text-white p-1 hover:bg-cyan-900/50 rounded transition-colors" title="Edit Node">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            </button>
+                            <button onclick="deletePrompt('${p.id}')" class="text-red-500 hover:text-red-300 p-1 hover:bg-red-900/30 rounded transition-colors" title="Purge Node">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
+
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-[10px] font-bold text-cyan-400 border border-cyan-800 bg-cyan-900/20 px-2 py-1 uppercase tracking-wider">${p.category}</span>
                         </div>
                         
-                        <h3 class="text-xl font-bold text-white mb-2 tracking-wide group-hover:text-cyan-400 transition-colors">${p.title}</h3>
+                        <h3 class="text-lg font-bold text-white mb-2 tracking-wide group-hover:text-cyan-400 transition-colors hud-font truncate">${p.title}</h3>
                         
-                        <div class="text-gray-400 text-sm font-mono mb-4 flex-grow relative overflow-hidden">
-                            <p class="line-clamp-3 opacity-80">${p.content}</p>
-                            <div class="absolute bottom-0 left-0 w-full h-8 bg-gradient-to-t from-black/80 to-transparent"></div>
+                        <div class="text-gray-400 text-sm font-mono mb-4 flex-grow relative overflow-hidden group-hover:text-gray-300 transition-colors">
+                            <p class="line-clamp-3 opacity-80 leading-relaxed">${p.content}</p>
+                            <div class="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-black via-black/80 to-transparent"></div>
                         </div>
 
                         <div class="flex flex-wrap gap-2 mb-4">
                             ${tagsHtml}
                         </div>
 
-                        <div class="pt-4 border-t border-cyan-900/30 flex justify-between items-center mt-auto">
-                            <span class="text-[10px] text-cyan-800">${new Date(p.updatedAt).toLocaleDateString()}</span>
-                            <button onclick="copyPrompt('${p.id}')" class="hud-btn px-3 py-1 text-xs flex items-center gap-1">
+                        <div class="pt-4 border-t border-cyan-900/30 flex justify-between items-center mt-auto relative">
+                             <div class="flex flex-col">
+                                <span class="text-[9px] text-cyan-800 uppercase tracking-widest">Last Update</span>
+                                <span class="text-[10px] text-cyan-600 font-mono">${new Date(p.updatedAt).toLocaleDateString()}</span>
+                            </div>
+                            <button onclick="copyPrompt('${p.id}')" class="hud-btn px-4 py-2 text-xs flex items-center gap-2 group-hover:bg-cyan-900/30">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                                COPY
+                                COPY_DATA
                             </button>
                         </div>
                     `;
@@ -443,17 +583,23 @@
                 renderPrompts(e.target.value);
             });
         }
+        
+        function setSearch(term) {
+            const input = document.getElementById('searchInput');
+            input.value = term;
+            renderPrompts(term);
+            input.focus();
+        }
 
         function openModal() {
             document.getElementById('modal').classList.remove('hidden');
             document.getElementById('modalContent').classList.add('modal-fade-enter-active');
             
-            // Clear form
             document.getElementById('promptForm').reset();
             document.getElementById('entryId').value = '';
             document.getElementById('modalTitle').innerText = 'NEW_ENTRY';
             
-            refreshCategories();
+            refreshCategoryDatalist();
             document.getElementById('titleInput').focus();
         }
 
@@ -470,18 +616,38 @@
             document.getElementById('contentInput').value = p.content;
             document.getElementById('tagsInput').value = p.tags.join(', ');
             
-            document.getElementById('modalTitle').innerText = 'EDIT_ENTRY :: ' + p.id.substring(0,4);
-            refreshCategories();
+            document.getElementById('modalTitle').innerText = 'EDIT :: ' + p.id.substring(0,4);
+            refreshCategoryDatalist();
         }
 
         function closeModal() {
             document.getElementById('modal').classList.add('hidden');
         }
 
+        // Updates the top filter bar
         function refreshCategories() {
+            const container = document.getElementById('filterContainer');
+            // Keep the "All" button
+            const allBtn = container.firstElementChild;
+            container.innerHTML = '';
+            container.appendChild(allBtn);
+
+            const categories = [...new Set(prompts.map(p => p.category))];
+            categories.sort().forEach(c => {
+                const btn = document.createElement('button');
+                btn.className = `filter-chip px-4 py-1 text-xs uppercase tracking-wider font-bold rounded-sm bg-black/50 ${activeFilter === c ? 'active bg-cyan-400 text-black' : ''}`;
+                btn.innerText = c;
+                btn.onclick = () => applyFilter(c);
+                container.appendChild(btn);
+            });
+            
+            refreshCategoryDatalist();
+        }
+        
+        // Updates the datalist for the form
+        function refreshCategoryDatalist() {
             const datalist = document.getElementById('categoryList');
             datalist.innerHTML = '';
-            // Get unique categories
             const categories = [...new Set(prompts.map(p => p.category))];
             categories.sort().forEach(c => {
                 const option = document.createElement('option');
@@ -494,10 +660,12 @@
             const toast = document.getElementById('toast');
             const msgEl = document.getElementById('toastMsg');
             msgEl.innerText = msg;
-            toast.classList.remove('translate-y-24');
+            toast.classList.remove('translate-y-32');
+            
+            // Auto hide
             setTimeout(() => {
-                toast.classList.add('translate-y-24');
-            }, 2500);
+                toast.classList.add('translate-y-32');
+            }, 3000);
         }
 
         function updateStats() {
@@ -505,7 +673,6 @@
             const uniqueCats = new Set(prompts.map(p => p.category)).size;
             document.getElementById('categoryCount').innerText = uniqueCats;
             
-            // Approx storage calculation
             const size = new Blob([JSON.stringify(prompts)]).size;
             document.getElementById('storageUsed').innerText = (size / 1024).toFixed(2) + ' KB';
         }
@@ -518,13 +685,14 @@
             document.body.appendChild(downloadAnchorNode);
             downloadAnchorNode.click();
             downloadAnchorNode.remove();
-            showToast('BACKUP_DOWNLOADED');
+            showToast('DATABASE_EXPORTED');
         }
 
-        // Close modal on outside click
         document.getElementById('modal').addEventListener('click', (e) => {
             if (e.target.id === 'modal') closeModal();
         });
+        
+        setupSearch();
 
     </script>
 </body>
